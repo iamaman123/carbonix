@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const API_BASE = import.meta.env.VITE_API_URL || "carbonix-me.vercel.app/api";
+const API_BASE = import.meta.env.VITE_API_URL || "carbonix-me-1.vercel.app/api";
 const CHAT_URL = `${API_BASE}/chatbot/chat`;
 
 // ─── Module-level context cache ───────────────────────────────────────────────

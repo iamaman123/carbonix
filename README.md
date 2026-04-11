@@ -19,11 +19,11 @@ Full-stack demo for listing, discovering, and trading surplus renewable energy (
 
 ## Authentication
 
-Sign-in is **Google only** (email/password registration and login are disabled in the API). In [Google Cloud Console](https://console.cloud.google.com/), create OAuth 2.0 credentials and set the redirect URI to the same value as `GOOGLE_CALLBACK_URL` in `server/.env` (default: `carbonix-me.vercel.app/api/auth/google/callback`).
+Sign-in is **Google only** (email/password registration and login are disabled in the API). In [Google Cloud Console](https://console.cloud.google.com/), create OAuth 2.0 credentials and set the redirect URI to the same value as `GOOGLE_CALLBACK_URL` in `server/.env` (default: `carbonix-me-1.vercel.app/api/auth/google/callback`).
 
 **OAuth redirect flow:** Browser opens `GET /api/auth/google?role=...` on the API (port **8000**) → Express redirects you to **accounts.google.com** → after consent, Google redirects to `GET /api/auth/google/callback?code=...&state=...` → the API issues a JWT and redirects the browser to `CLIENT_URL/auth/google/success?token=...` (Vite on **5173**). In Google Console, only the **callback** URL must be listed (not the `/google` start URL). Avoid spaces after `=` in `.env` values.
 
-**Check config:** With the API running, open `carbonix-me.vercel.app/api/auth/oauth-config` — it shows the exact `callbackUrl` string that must appear under *Authorised redirect URIs* for this client ID.
+**Check config:** With the API running, open `carbonix-me-1.vercel.app/api/auth/oauth-config` — it shows the exact `callbackUrl` string that must appear under *Authorised redirect URIs* for this client ID.
 
 ## Run locally
 
@@ -35,7 +35,7 @@ Sign-in is **Google only** (email/password registration and login are disabled i
 **Manual**
 
 1. `blockchain-service`: run `setup.sh` / `setup.bat`, then `python app.py` (and optionally `python worker.py`).
-2. `server`: `npm install` → `npm run dev` (API on **carbonix-me.vercel.app** when `PORT=8000`)
+2. `server`: `npm install` → `npm run dev` (API on **carbonix-me-1.vercel.app** when `PORT=8000`)
 3. `client`: `npm install` → `npm run dev` (Vite on **http://localhost:5173**)
 
 ## Environment

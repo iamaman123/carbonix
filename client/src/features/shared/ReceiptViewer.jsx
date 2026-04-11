@@ -14,7 +14,7 @@ const ReceiptViewer = () => {
   const [receiptHTML, setReceiptHTML] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || "carbonix-me.vercel.app/api";
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "carbonix-me-1.vercel.app/api";
 
   useEffect(() => {
     const fetchReceipt = async () => {

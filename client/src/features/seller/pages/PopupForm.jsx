@@ -105,7 +105,7 @@ const FormComponent = ({ isOpen, setIsOpen }) => {
         },
       };
 
-      const API_BASE_URL = import.meta.env.VITE_API_URL || "carbonix-me.vercel.app/api";
+      const API_BASE_URL = import.meta.env.VITE_API_URL || "carbonix-me-1.vercel.app/api";
       await axios.post(`${API_BASE_URL}/credits/post`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
