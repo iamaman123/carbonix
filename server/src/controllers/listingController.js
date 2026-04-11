@@ -94,10 +94,18 @@ export const createListing = async (req, res) => {
     });
   } catch (error) {
     logger.error("Error creating listing:", error);
-    res.status(400).json({ 
+    if (error.name === "ValidationError" && error.errors) {
+      const msgs = Object.values(error.errors).map((e) => e.message);
+      return res.status(400).json({
+        success: false,
+        message: msgs.join(" "),
+        errors: msgs,
+      });
+    }
+    res.status(400).json({
       success: false,
-      message: "Failed to create listing",
-      error: error.message 
+      message: error.message || "Failed to create listing",
+      errors: [error.message],
     });
   }
 };

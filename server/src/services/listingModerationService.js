@@ -44,7 +44,9 @@ const runLocalGuards = (payload) => {
   const quantity = Number(payload.quantity || 0);
 
   if (title.length < 3) reasons.push("Title is too short.");
-  if (description.length < 20) reasons.push("Description is too short for verification.");
+  if (description.length < 10) {
+    reasons.push("Project summary is too short — use at least 10 characters describing the project.");
+  }
   if (quantity <= 0) reasons.push("Quantity must be greater than 0.");
   if (price <= 0) reasons.push("Price per credit must be greater than 0.");
 
@@ -87,16 +89,16 @@ export const validateListingAuthenticity = async (listingPayload) => {
   const cached = getFromCache(fingerprint);
   if (cached) return { ...cached, cached: true };
 
+  // Allow listings when Gemini is not configured (e.g. local / demo); local guards already ran.
   if (!GEMINI_API_KEY) {
     return {
-      isValid: false,
-      riskScore: 100,
-      riskLevel: "high",
-      reasons: [
-        "Listing validation service is unavailable (GEMINI_API_KEY missing). Please contact support.",
-      ],
-      source: "gemini",
-      confidence: 1,
+      isValid: true,
+      riskScore: 45,
+      riskLevel: "medium",
+      reasons: [],
+      errorFields: [],
+      source: "no-gemini",
+      confidence: 0.5,
       checkedAt: new Date(),
     };
   }

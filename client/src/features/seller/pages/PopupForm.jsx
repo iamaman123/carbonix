@@ -34,6 +34,33 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import FileUpload from "@/components/common/FileUpload";
+import { API_BASE_URL } from "@/constants/api";
+
+function formatApiErrors(apiData) {
+  const raw = apiData?.errors;
+  if (!raw) return [];
+  if (Array.isArray(raw)) {
+    return raw
+      .map((item) => {
+        if (typeof item === "string") return item;
+        if (item?.message) return String(item.message).replace(/"/g, "");
+        if (item?.field && item?.message)
+          return `${item.field}: ${String(item.message).replace(/"/g, "")}`;
+        try {
+          return JSON.stringify(item);
+        } catch {
+          return String(item);
+        }
+      })
+      .filter(Boolean);
+  }
+  if (typeof raw === "object") {
+    return Object.values(raw).map((v) =>
+      typeof v === "string" ? v : v?.message || JSON.stringify(v),
+    );
+  }
+  return [];
+}
 
 const createInitialFormState = () => ({
   title: "",
@@ -95,17 +122,58 @@ const FormComponent = ({ isOpen, setIsOpen }) => {
 
     setIsSubmitting(true);
     try {
+      const title = (formData.title || "").trim();
+      const description = (formData.description || "").trim();
+      if (title.length < 3) {
+        toast({
+          title: "Check project title",
+          description: "Use at least 3 characters for the title.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      if (description.length < 10) {
+        toast({
+          title: "Check project summary",
+          description: "Write at least 10 characters so buyers can understand the project.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      if (!formData.projectType) {
+        toast({
+          title: "Project type required",
+          description: "Select a classification under Project type.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      if (!formData.verification?.verifiedBy) {
+        toast({
+          title: "Verification required",
+          description: "Select who verified the credits (Verified by).",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       const payload = {
-        ...formData,
+        title,
+        description,
+        location: (formData.location || "").trim(),
+        projectType: formData.projectType,
         quantity: Number(formData.quantity) || 0,
         pricePerCredit: Number(formData.pricePerCredit) || 0,
         verification: {
-          verifiedBy: formData.verification.verifiedBy || "Others",
-          certificateUrl: formData.verification.certificateUrl || "",
+          verifiedBy: formData.verification.verifiedBy,
+          certificateUrl: (formData.verification.certificateUrl || "").trim(),
         },
       };
 
-      const API_BASE_URL = import.meta.env.VITE_API_URL || "https://carbonix-me-1.vercel.app/api";
       await axios.post(`${API_BASE_URL}/credits/post`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -124,23 +192,25 @@ const FormComponent = ({ isOpen, setIsOpen }) => {
       console.error("Error creating listing:", error);
 
       const apiData = error.response?.data || {};
-      const reasons = Array.isArray(apiData.errors) ? apiData.errors : [];
+      const reasons = formatApiErrors(apiData);
       const flaggedFields = Array.isArray(apiData.errorFields) ? apiData.errorFields : [];
 
       const reasonText = reasons.length
         ? reasons.map((reason, index) => `${index + 1}. ${reason}`).join("\n")
-        : null;
-
-      const fieldText = flaggedFields.length
-        ? `\nFields: ${flaggedFields.join(", ")}`
         : "";
+
+      const fieldText = flaggedFields.length ? `\nFields: ${flaggedFields.join(", ")}` : "";
+
+      const detail =
+        reasonText ||
+        (typeof apiData.message === "string" ? `${apiData.message}${fieldText}` : "") ||
+        (typeof apiData.error === "string" ? apiData.error : "") ||
+        error.message ||
+        "Please review your details and try again.";
 
       toast({
         title: "Unable to create listing",
-        description:
-          reasonText ||
-          (apiData.message ? `${apiData.message}${fieldText}` : null) ||
-          "Please review your details and try again.",
+        description: detail,
         variant: "destructive",
       });
     } finally {

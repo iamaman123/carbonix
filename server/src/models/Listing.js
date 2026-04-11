@@ -29,7 +29,7 @@ const CarbonCreditSchema = new mongoose.Schema({
   verification: {
     verifiedBy: {
       type: String,
-      enum: ["VCS", "Gold Standard", "CDM", "Others"],
+      enum: ["VCS", "Gold Standard", "CDM", "ACR", "Others"],
       required: true,
     },
     certificateUrl: { type: String, required: false },

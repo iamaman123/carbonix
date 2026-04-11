@@ -44,7 +44,7 @@ export const createListingSchema = Joi.object({
     }),
   verification: Joi.object({
     verifiedBy: Joi.string()
-      .valid("VCS", "Gold Standard", "CDM", "Others")
+      .valid("VCS", "Gold Standard", "CDM", "ACR", "Others")
       .required()
       .messages({
         "any.only": "Invalid verification standard",
