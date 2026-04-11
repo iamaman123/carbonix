@@ -9,6 +9,42 @@ const env = (key, fallback = "") => {
   return String(v).trim();
 };
 
+/**
+ * Google / Passport need an absolute callback URL. If GOOGLE_CALLBACK_URL has no scheme,
+ * some stacks resolve it relative to http://HOST/ and you get:
+ *   http://HOST/HOST/api/auth/google/callback  → redirect_uri_mismatch
+ * Always use https://… except localhost.
+ */
+function normalizeGoogleCallbackUrl(raw, localFallback) {
+  let u = raw?.trim();
+  if (!u) u = localFallback;
+  if (!u) return localFallback;
+
+  if (!/^https?:\/\//i.test(u)) {
+    u = `https://${u.replace(/^\/+/, "")}`;
+  }
+
+  try {
+    const parsed = new URL(u);
+    const host = parsed.hostname;
+    const parts = parsed.pathname.split("/").filter(Boolean);
+    // Strip mistaken first path segment when it repeats the hostname (double-host bug)
+    if (parts[0] === host) {
+      parts.shift();
+      parsed.pathname = `/${parts.join("/")}`.replace(/\/+/g, "/") || "/";
+      u = parsed.toString().replace(/\/$/, "");
+    }
+    if (parsed.hostname.endsWith(".vercel.app") && parsed.protocol === "http:") {
+      parsed.protocol = "https:";
+      u = parsed.toString().replace(/\/$/, "");
+    }
+  } catch {
+    /* keep u */
+  }
+
+  return u;
+}
+
 const config = {
   // Server Configuration
   port: Number(process.env.PORT) || 8000,
@@ -65,10 +101,10 @@ const config = {
   google: {
     clientId: env("GOOGLE_CLIENT_ID"),
     clientSecret: env("GOOGLE_CLIENT_SECRET"),
-    // Must be the full public URL of THIS API (including https). On Vercel set GOOGLE_CALLBACK_URL — never use localhost there.
-    callbackUrl:
-      env("GOOGLE_CALLBACK_URL") ||
+    callbackUrl: normalizeGoogleCallbackUrl(
+      env("GOOGLE_CALLBACK_URL"),
       "http://localhost:8000/api/auth/google/callback",
+    ),
   },
 };
 
