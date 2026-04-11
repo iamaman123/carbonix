@@ -2,6 +2,20 @@ import crypto from "crypto";
 import Razorpay from "razorpay";
 import config from "../config/index.js";
 
+/**
+ * When true, checkout skips Razorpay order creation and uses POST .../complete-mock-checkout instead.
+ * - RAZORPAY_MOCK=true|1|yes → always mock (even if keys exist; for UI testing)
+ * - RAZORPAY_MOCK=false|0 → never mock (503 if keys missing)
+ * - unset → mock if key id or secret is missing (demo / local / Vercel without keys)
+ */
+export function isRazorpayCheckoutMocked() {
+  const v = process.env.RAZORPAY_MOCK?.trim().toLowerCase();
+  if (v === "false" || v === "0") return false;
+  if (v === "true" || v === "1" || v === "yes") return true;
+  const hasKeys = Boolean(config.razorpay.keyId && config.razorpay.keySecret);
+  return !hasKeys;
+}
+
 let _client = null;
 let _checked = false;
 
@@ -41,6 +55,13 @@ export function getRazorpayErrorMessage(err) {
   } catch {
     return "Razorpay request failed";
   }
+}
+
+/** True when Razorpay API rejected key_id / key_secret (wrong, mismatched, or not from same mode). */
+export function isRazorpayAuthFailure(err) {
+  if (err?.statusCode === 401) return true;
+  const m = getRazorpayErrorMessage(err).toLowerCase();
+  return m.includes("authentication") && m.includes("failed");
 }
 
 export function verifyRazorpayPaymentSignature(orderId, paymentId, signature) {

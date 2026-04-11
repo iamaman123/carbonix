@@ -7,6 +7,7 @@
     "dev": "nodemon local.js",
     "start": "node local.js",
     "seed": "node src/scripts/seedData.js",
+    "seed:test": "node src/scripts/seedTestData.js",
     "seed-blogs": "node src/scripts/seedBlogs.js",
     "add-listings": "node src/scripts/addListingsToUsers.js",
     "add-transactions": "node src/scripts/addTransactionsToConsumers.js",

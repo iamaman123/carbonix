@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast, Toaster } from "sonner";
@@ -55,9 +56,9 @@ const CreditPaymentSuccessDialog = ({ isOpen, onClose, txDetails, onViewReceipt 
           <DialogTitle className="text-xl font-bold text-green-700 dark:text-green-500 mb-1">
             Payment Successful! 🎉
           </DialogTitle>
-          <p className="text-muted-foreground text-sm">
+          <DialogDescription className="text-muted-foreground text-sm">
             Your carbon credits have been reserved successfully
-          </p>
+          </DialogDescription>
         </motion.div>
 
         {/* Transaction details */}
@@ -222,8 +223,27 @@ const TransactionPage = () => {
         quantity: Number(quantity),
       });
       const d = res.data?.data;
-      if (!d?.orderId || !d?.keyId) {
-        throw new Error("No Razorpay order received from server");
+      if (!d?.orderId) {
+        throw new Error("No checkout session from server");
+      }
+
+      if (d.checkoutMode === "mock") {
+        await api.post("/credits/complete-mock-checkout", {
+          transactionId: d.transactionId,
+        });
+        const qp = new URLSearchParams({
+          id: id || "",
+          price: String(pricePerCredit),
+          title: title || "",
+          maxQuantity: String(maxQuantity),
+        });
+        navigate(`/payment?success=true&transactionId=${d.transactionId}&${qp.toString()}`);
+        setLoading(false);
+        return;
+      }
+
+      if (!d?.keyId) {
+        throw new Error("No Razorpay key from server");
       }
       const RazorpayCtor = await loadRazorpayScript();
       const qp = new URLSearchParams({

@@ -19,6 +19,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -232,8 +233,21 @@ const EcoMarketplace = () => {
         shippingAddress,
       });
       const d = res.data;
-      if (!d?.orderId || !d?.keyId) {
-        throw new Error("No Razorpay order received from server");
+      if (!d?.orderId) {
+        throw new Error("No checkout session from server");
+      }
+
+      if (d.checkoutMode === "mock") {
+        await api.post("/eco-products/complete-mock-checkout", {
+          orderId: d.mongoOrderId,
+        });
+        setPurchasing(false);
+        window.location.href = `/eco-marketplace?success=true&orderId=${d.mongoOrderId}`;
+        return;
+      }
+
+      if (!d?.keyId) {
+        throw new Error("No Razorpay key from server");
       }
       const RazorpayCtor = await loadRazorpayScript();
       const rzp = new RazorpayCtor({
@@ -677,6 +691,9 @@ const EcoMarketplace = () => {
               <ShoppingCart className="h-5 w-5 text-green-600" />
               Purchase Product
             </DialogTitle>
+            <DialogDescription>
+              Review quantity and shipping, then pay securely with Razorpay.
+            </DialogDescription>
           </DialogHeader>
           {purchaseProduct && (
             <div className="space-y-4 mt-2">
@@ -778,6 +795,9 @@ const EcoMarketplace = () => {
               <Package className="h-5 w-5 text-green-600" />
               My Eco Orders
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              List of your eco marketplace orders and their status.
+            </DialogDescription>
           </DialogHeader>
           {ordersLoading ? (
             <div className="space-y-3">
@@ -872,6 +892,9 @@ const EcoMarketplace = () => {
                 </div>
                 Environmental Impact
               </DialogTitle>
+              <DialogDescription className="sr-only">
+                Estimated environmental benefits for this product.
+              </DialogDescription>
             </DialogHeader>
             {impactProduct && (
               <div className="relative z-10 text-center flex flex-col items-center animate-in fade-in zoom-in duration-500">

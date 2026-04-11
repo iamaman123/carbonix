@@ -7,7 +7,13 @@ import { sendNotificationEmail, emailTemplates } from "../utils/emailNotificatio
 import { generateReceiptData } from "../utils/receiptGenerator.js";
 import { validateListingAuthenticity } from "../services/listingModerationService.js";
 import config from "../config/index.js";
-import { getRazorpay, getRazorpayErrorMessage, verifyRazorpayPaymentSignature } from "../utils/razorpayClient.js";
+import {
+  getRazorpay,
+  getRazorpayErrorMessage,
+  isRazorpayAuthFailure,
+  isRazorpayCheckoutMocked,
+  verifyRazorpayPaymentSignature,
+} from "../utils/razorpayClient.js";
 
 /** Atomically mark a credit transaction completed and apply listing + user balances. */
 async function completeCreditPurchase(transactionId, paymentExtras = {}) {
@@ -617,17 +623,42 @@ export const createCreditCheckoutSession = async (req, res) => {
     await transaction.save();
     pendingTransactionId = transaction._id;
 
+    const useMockCheckout = isRazorpayCheckoutMocked();
     const rz = getRazorpay();
-    if (!rz) {
+
+    if (!useMockCheckout && !rz) {
       await transactionsModel.findByIdAndDelete(transaction._id);
       pendingTransactionId = null;
       return res.status(503).json({
         success: false,
-        message: "Payments are not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in server/.env.",
+        message:
+          "Payments are not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in server/.env, or leave them unset to use demo checkout.",
       });
     }
 
     const amountPaise = Math.round(totalAmount * 100);
+
+    if (useMockCheckout) {
+      const mockOrderId = `mock_${transaction._id}`;
+      transaction.razorpayOrderId = mockOrderId;
+      await transaction.save();
+      if ((process.env.NODE_ENV || "").toLowerCase() === "production") {
+        logger.warn("Mock credit checkout session (no real Razorpay payment).");
+      }
+      return res.status(200).json({
+        success: true,
+        data: {
+          checkoutMode: "mock",
+          keyId: "rzp_demo",
+          orderId: mockOrderId,
+          amount: amountPaise,
+          currency: "INR",
+          transactionId: transaction._id,
+          listingTitle: listing.title,
+        },
+      });
+    }
+
     const receipt = String(transaction._id).replace(/[^a-zA-Z0-9]/g, "").slice(-40) || `rcpt${Date.now()}`;
 
     const rpOrder = await rz.orders.create({
@@ -658,15 +689,73 @@ export const createCreditCheckoutSession = async (req, res) => {
     });
   } catch (error) {
     const detail = getRazorpayErrorMessage(error) || error?.message || "Unknown error";
+    const authFail = isRazorpayAuthFailure(error);
     logger.error("Error creating credit checkout session:", error);
     if (pendingTransactionId) {
       await transactionsModel.findByIdAndDelete(pendingTransactionId).catch(() => {});
     }
-    res.status(500).json({
+    const msg = authFail
+      ? "Razorpay rejected the API keys (authentication failed). Use Key Id and Key Secret from the same Razorpay dashboard mode (both Test or both Live). On Vercel: Project → Settings → Environment Variables → set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET, then redeploy."
+      : `Checkout failed: ${detail}`;
+    res.status(authFail ? 503 : 500).json({
       success: false,
-      message: `Checkout failed: ${detail}`,
+      message: msg,
       error: detail,
+      code: authFail ? "RAZORPAY_AUTH" : undefined,
     });
+  }
+};
+
+// ✅ Demo checkout: complete purchase without Razorpay (only when mock mode is allowed)
+export const completeMockCreditCheckout = async (req, res) => {
+  try {
+    if (!isRazorpayCheckoutMocked()) {
+      return res.status(403).json({
+        success: false,
+        message: "Demo checkout is disabled. Configure Razorpay keys or remove RAZORPAY_MOCK=false.",
+      });
+    }
+    const buyerId = req.user.userId;
+    const { transactionId } = req.body;
+
+    const transaction = await transactionsModel.findById(transactionId);
+    if (!transaction) {
+      return res.status(404).json({ success: false, message: "Transaction not found" });
+    }
+    if (transaction.buyer.toString() !== buyerId) {
+      return res.status(403).json({ success: false, message: "Access denied" });
+    }
+    if (!transaction.razorpayOrderId?.startsWith("mock_")) {
+      return res.status(400).json({ success: false, message: "Not a demo checkout transaction" });
+    }
+    if (transaction.paymentStatus !== "pending") {
+      const existing = await transactionsModel
+        .findById(transactionId)
+        .populate("listing", "title projectType");
+      return res.json({
+        success: true,
+        data: existing,
+        message: existing?.paymentStatus === "completed" ? "Already completed" : "Transaction not pending",
+      });
+    }
+
+    const updated = await completeCreditPurchase(transactionId, {
+      razorpayPaymentId: `mock_pay_${transactionId}`,
+      paymentMethod: "other",
+    });
+
+    if (!updated) {
+      return res.status(409).json({ success: false, message: "Could not complete transaction" });
+    }
+
+    const fresh = await transactionsModel
+      .findById(transactionId)
+      .populate("listing", "title projectType");
+
+    res.json({ success: true, data: fresh, message: "Demo purchase completed" });
+  } catch (error) {
+    logger.error("Error completing mock credit checkout:", error);
+    res.status(500).json({ success: false, message: "Demo checkout failed", error: error.message });
   }
 };
 

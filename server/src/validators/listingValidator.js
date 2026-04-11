@@ -87,3 +87,10 @@ export const verifyRazorpayCreditSchema = Joi.object({
   razorpay_payment_id: Joi.string().required(),
   razorpay_signature: Joi.string().required(),
 });
+
+export const mockCreditCheckoutCompleteSchema = Joi.object({
+  transactionId: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/)
+    .required()
+    .messages({ "string.pattern.base": "Invalid transaction ID" }),
+});

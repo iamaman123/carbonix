@@ -2,7 +2,7 @@ import React from "react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
+  DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -57,9 +57,9 @@ const PaymentSuccessDialog = ({ isOpen, onClose, orderDetails }) => {
             <DialogTitle className="text-2xl font-bold text-green-700 dark:text-green-500 mb-2">
               Payment Successful! 🎉
             </DialogTitle>
-            <p className="text-muted-foreground text-sm">
+            <DialogDescription className="text-muted-foreground text-sm">
               Your order has been placed successfully
-            </p>
+            </DialogDescription>
           </motion.div>
 
           {/* Order Details */}

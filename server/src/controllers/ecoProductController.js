@@ -3,7 +3,13 @@ import EcoOrder from "../models/EcoOrder.js";
 import userModel from "../models/userModel.js";
 import logger from "../utils/logger.js";
 import config from "../config/index.js";
-import { getRazorpay, getRazorpayErrorMessage, verifyRazorpayPaymentSignature } from "../utils/razorpayClient.js";
+import {
+  getRazorpay,
+  getRazorpayErrorMessage,
+  isRazorpayAuthFailure,
+  isRazorpayCheckoutMocked,
+  verifyRazorpayPaymentSignature,
+} from "../utils/razorpayClient.js";
 
 async function completeEcoOrderPurchase(orderId, paymentExtras = {}) {
   const order = await EcoOrder.findById(orderId);
@@ -489,13 +495,16 @@ export const createCheckoutSession = async (req, res) => {
     await order.save();
     pendingOrderId = order._id;
 
+    const useMockCheckout = isRazorpayCheckoutMocked();
     const rz = getRazorpay();
-    if (!rz) {
+
+    if (!useMockCheckout && !rz) {
       await EcoOrder.findByIdAndDelete(order._id);
       pendingOrderId = null;
       return res.status(503).json({
         success: false,
-        message: "Payments are not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in server/.env.",
+        message:
+          "Payments are not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in server/.env, or leave them unset to use demo checkout.",
       });
     }
 
@@ -508,6 +517,30 @@ export const createCheckoutSession = async (req, res) => {
         message: "Minimum order total is ₹1.00 for online payment. Increase quantity or choose another product.",
       });
     }
+
+    if (useMockCheckout) {
+      const mockOrderId = `mock_${order._id}`;
+      order.razorpayOrderId = mockOrderId;
+      await order.save();
+      if ((process.env.NODE_ENV || "").toLowerCase() === "production") {
+        logger.warn("Mock eco checkout session (no real Razorpay payment).");
+      }
+      return res.status(200).json({
+        success: true,
+        message: "Demo checkout order created",
+        data: {
+          checkoutMode: "mock",
+          keyId: "rzp_demo",
+          orderId: mockOrderId,
+          amount: amountPaise,
+          currency: "INR",
+          mongoOrderId: order._id,
+          orderHash: order.orderHash,
+          productName: product.name,
+        },
+      });
+    }
+
     const receipt = String(order._id).replace(/[^a-zA-Z0-9]/g, "").slice(-40) || `eco${Date.now()}`;
 
     const rpOrder = await rz.orders.create({
@@ -546,15 +579,67 @@ export const createCheckoutSession = async (req, res) => {
     });
   } catch (error) {
     const detail = getRazorpayErrorMessage(error) || error?.message || "Unknown error";
+    const authFail = isRazorpayAuthFailure(error);
     logger.error("Error creating checkout session:", error);
     if (pendingOrderId) {
       await EcoOrder.findByIdAndDelete(pendingOrderId).catch(() => {});
     }
-    res.status(500).json({
+    const msg = authFail
+      ? "Razorpay rejected the API keys (authentication failed). Use Key Id and Key Secret from the same Razorpay dashboard mode (both Test or both Live). On Vercel: Project → Settings → Environment Variables → set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET, then redeploy."
+      : `Checkout failed: ${detail}`;
+    res.status(authFail ? 503 : 500).json({
       success: false,
-      message: `Checkout failed: ${detail}`,
+      message: msg,
       error: detail,
+      code: authFail ? "RAZORPAY_AUTH" : undefined,
     });
+  }
+};
+
+// ✅ Demo checkout: complete eco order without Razorpay
+export const completeMockEcoCheckout = async (req, res) => {
+  try {
+    if (!isRazorpayCheckoutMocked()) {
+      return res.status(403).json({
+        success: false,
+        message: "Demo checkout is disabled. Configure Razorpay keys or remove RAZORPAY_MOCK=false.",
+      });
+    }
+    const buyerId = req.user.userId;
+    const { orderId } = req.body;
+
+    const order = await EcoOrder.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+    if (order.buyer.toString() !== buyerId) {
+      return res.status(403).json({ success: false, message: "Access denied" });
+    }
+    if (!order.razorpayOrderId?.startsWith("mock_")) {
+      return res.status(400).json({ success: false, message: "Not a demo checkout order" });
+    }
+    if (order.paymentStatus !== "pending") {
+      const existing = await EcoOrder.findById(orderId).populate("product", "name category price imageUrl");
+      return res.json({
+        success: true,
+        data: existing,
+        message: existing?.paymentStatus === "completed" ? "Already completed" : "Order not pending",
+      });
+    }
+
+    const updated = await completeEcoOrderPurchase(orderId, {
+      razorpayPaymentId: `mock_pay_${orderId}`,
+    });
+
+    if (!updated) {
+      return res.status(409).json({ success: false, message: "Could not complete order" });
+    }
+
+    const fresh = await EcoOrder.findById(orderId).populate("product", "name category price imageUrl");
+    res.json({ success: true, data: fresh, message: "Demo purchase completed" });
+  } catch (error) {
+    logger.error("Error completing mock eco checkout:", error);
+    res.status(500).json({ success: false, message: "Demo checkout failed", error: error.message });
   }
 };
 

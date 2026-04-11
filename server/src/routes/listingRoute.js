@@ -12,6 +12,7 @@ import {
   getTransactionData,
   getReceipt,
   createCreditCheckoutSession,
+  completeMockCreditCheckout,
   verifyRazorpayCreditPayment,
   getTransactionById,
 } from "../controllers/listingController.js";
@@ -22,6 +23,7 @@ import {
   createListingSchema,
   paymentSchema,
   verifyRazorpayCreditSchema,
+  mockCreditCheckoutCompleteSchema,
 } from "../validators/listingValidator.js";
 
 const router = express.Router();
@@ -31,6 +33,12 @@ router.post("/post", authMiddleware, validate(createListingSchema), createListin
 router.get("/posted-data", authMiddleware, getPostedListingForUser);
 router.post("/payment", authMiddleware, validate(paymentSchema), makePayment);
 router.post("/create-checkout-session", authMiddleware, validate(paymentSchema), createCreditCheckoutSession);
+router.post(
+  "/complete-mock-checkout",
+  authMiddleware,
+  validate(mockCreditCheckoutCompleteSchema),
+  completeMockCreditCheckout,
+);
 router.post(
   "/verify-razorpay-payment",
   authMiddleware,

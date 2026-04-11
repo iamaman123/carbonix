@@ -10,6 +10,7 @@ import {
   getAllEcoOrders,
   getEcoStats,
   createCheckoutSession,
+  completeMockEcoCheckout,
   verifyRazorpayEcoPayment,
   getEcoOrderById,
 } from "../controllers/ecoProductController.js";
@@ -22,6 +23,7 @@ import {
   updateEcoProductSchema,
   purchaseEcoProductSchema,
   verifyRazorpayEcoSchema,
+  mockEcoCheckoutCompleteSchema,
 } from "../validators/ecoProductValidator.js";
 
 const router = express.Router();
@@ -42,6 +44,12 @@ router.post(
   authMiddleware,
   validate(purchaseEcoProductSchema),
   createCheckoutSession,
+);
+router.post(
+  "/complete-mock-checkout",
+  authMiddleware,
+  validate(mockEcoCheckoutCompleteSchema),
+  completeMockEcoCheckout,
 );
 router.post(
   "/verify-razorpay-payment",
