@@ -1,5 +1,5 @@
-// API base — must be an absolute URL. Without "https://", the browser treats "host/api/…" as a
-// path on the *current* SPA origin → 404 when opening Google OAuth in a popup.
+// API base must be absolute. Without "https://", the browser treats "host/api/..." as a path on
+// the *current* SPA origin → Vercel 404 after you pick a Google account (OAuth never hits the API).
 const DEFAULT_API_BASE = "https://carbonix-me-1.vercel.app/api";
 
 function withProtocol(url) {
@@ -22,7 +22,7 @@ export const SOCKET_BASE_URL = (() => {
   return API_BASE_URL.replace(/\/api\/?$/, "");
 })();
 
-/** Use for window.open / window.location so OAuth always hits the API host, never a relative path. */
+/** For window.open() so Google OAuth always opens the API host, never a relative URL. */
 export function absoluteApiUrl(path) {
   const base = API_BASE_URL.replace(/\/$/, "");
   const p = path.startsWith("/") ? path : `/${path}`;
