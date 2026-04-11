@@ -91,6 +91,10 @@ router.get("/google", (req, res, next) => {
 router.get("/google/callback", (req, res, next) => {
   const clientBase = process.env.CLIENT_URL?.trim() || config.clientUrl;
 
+  if (!config.google.clientId || !config.google.clientSecret) {
+    return res.redirect(`${clientBase}/login?error=google_not_configured`);
+  }
+
   if (req.query?.error) {
     logger.warn(
       `Google OAuth query error=${req.query.error}: ${req.query.error_description || ""}`,

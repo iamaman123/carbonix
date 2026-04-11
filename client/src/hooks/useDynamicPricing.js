@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import axios from "axios";
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL || "http://localhost:8000/api"}/pricing`;
+const API_BASE_URL = `${import.meta.env.VITE_API_URL || "carbonix-me.vercel.app/api"}/pricing`;
 
 /**
  * Hook to fetch and manage dynamic pricing data
