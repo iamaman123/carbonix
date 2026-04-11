@@ -15,6 +15,15 @@ const env = (key, fallback = "") => {
  *   http://HOST/HOST/api/auth/google/callback  → redirect_uri_mismatch
  * Always use https://… except localhost.
  */
+/** Vercel sets VERCEL_URL to the deployment host (no scheme), e.g. carbonix-me-1.vercel.app */
+function googleCallbackFromVercelUrl() {
+  const v = process.env.VERCEL_URL?.trim();
+  if (!v) return "";
+  const host = v.replace(/^https?:\/\//i, "").split("/")[0].trim();
+  if (!host) return "";
+  return `https://${host}/api/auth/google/callback`;
+}
+
 function normalizeGoogleCallbackUrl(raw, localFallback) {
   let u = raw?.trim();
   if (!u) u = localFallback;
@@ -102,7 +111,7 @@ const config = {
     clientId: env("GOOGLE_CLIENT_ID"),
     clientSecret: env("GOOGLE_CLIENT_SECRET"),
     callbackUrl: normalizeGoogleCallbackUrl(
-      env("GOOGLE_CALLBACK_URL"),
+      env("GOOGLE_CALLBACK_URL") || googleCallbackFromVercelUrl(),
       "http://localhost:8000/api/auth/google/callback",
     ),
   },

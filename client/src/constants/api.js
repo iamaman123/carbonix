@@ -1,5 +1,5 @@
-// API Constants — VITE_API_URL should be a full URL (https://…/api). Without a scheme, the
-// browser treats values like "host/api/..." as a *path* on the current site → 404 on Google login.
+// API base — must be an absolute URL. Without "https://", the browser treats "host/api/…" as a
+// path on the *current* SPA origin → 404 when opening Google OAuth in a popup.
 const DEFAULT_API_BASE = "https://carbonix-me-1.vercel.app/api";
 
 function withProtocol(url) {
@@ -21,6 +21,13 @@ export const SOCKET_BASE_URL = (() => {
   if (raw) return withProtocol(raw);
   return API_BASE_URL.replace(/\/api\/?$/, "");
 })();
+
+/** Use for window.open / window.location so OAuth always hits the API host, never a relative path. */
+export function absoluteApiUrl(path) {
+  const base = API_BASE_URL.replace(/\/$/, "");
+  const p = path.startsWith("/") ? path : `/${path}`;
+  return withProtocol(base) + p;
+}
 
 // API Endpoints
 export const API_ENDPOINTS = {

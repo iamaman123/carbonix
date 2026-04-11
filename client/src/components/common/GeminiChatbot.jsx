@@ -2,10 +2,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Bot, Loader2, MessageCircle, Send, X, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { API_BASE_URL } from "@/constants/api";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const API_BASE = import.meta.env.VITE_API_URL || "https://carbonix-me-1.vercel.app/api";
-const CHAT_URL = `${API_BASE}/chatbot/chat`;
+const CHAT_URL = `${API_BASE_URL}/chatbot/chat`;
 
 // ─── Module-level context cache ───────────────────────────────────────────────
 let _cachedContext = null;
@@ -15,7 +15,7 @@ const fetchPlatformContext = () => {
   if (_cachedContext) return Promise.resolve(_cachedContext);
   if (_contextFetchPromise) return _contextFetchPromise;
 
-  _contextFetchPromise = fetch(`${API_BASE}/chatbot/context`)
+  _contextFetchPromise = fetch(`${API_BASE_URL}/chatbot/context`)
     .then((res) => res.json())
     .then((data) => {
       if (data.success) _cachedContext = data.context;

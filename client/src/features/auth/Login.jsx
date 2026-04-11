@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import auth from "/auth.jpg";
 import { toast } from "sonner";
-import { API_BASE_URL } from "@/constants/api";
+import { absoluteApiUrl } from "@/constants/api";
 import { GOOGLE_AUTH_MESSAGE_TYPE } from "@/constants/oauth";
 
 const POPUP_FEATURES =
@@ -27,7 +27,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   const googleAuthUrl = useMemo(
-    () => `${API_BASE_URL}/auth/google?role=${encodeURIComponent(role)}`,
+    () => absoluteApiUrl(`/auth/google?role=${encodeURIComponent(role)}`),
     [role],
   );
 

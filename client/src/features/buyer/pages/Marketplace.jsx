@@ -100,7 +100,7 @@ const Marketplace = () => {
     setPricingLoading(true);
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/pricing/${listingId}?isProduct=false`,
+        `${API_BASE_URL}/pricing/${listingId}?isProduct=false`,
       );
       if (response.data.data) {
         setPricingData(response.data.data);
@@ -129,7 +129,7 @@ const Marketplace = () => {
           const chunk = items.slice(i, i + chunkSize);
           const chunkPromises = chunk.map(async (listing) => {
             try {
-              const pRes = await axios.get(`${API_BASE_URL}/api/pricing/${listing._id}?isProduct=false`);
+              const pRes = await axios.get(`${API_BASE_URL}/pricing/${listing._id}?isProduct=false`);
               const recommendedPrice = pRes.data?.data?.recommendedPrice || listing.pricePerCredit;
               return { ...listing, dynamicPrice: recommendedPrice };
             } catch (err) {
