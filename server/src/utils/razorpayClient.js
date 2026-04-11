@@ -9,11 +9,7 @@ import config from "../config/index.js";
  * - unset → mock if key id or secret is missing (demo / local / Vercel without keys)
  */
 export function isRazorpayCheckoutMocked() {
-  const v = process.env.RAZORPAY_MOCK?.trim().toLowerCase();
-  if (v === "false" || v === "0") return false;
-  if (v === "true" || v === "1" || v === "yes") return true;
-  const hasKeys = Boolean(config.razorpay.keyId && config.razorpay.keySecret);
-  return !hasKeys;
+  return true; // HARDCODED TO TRUE FOR MANUAL BYPASS
 }
 
 let _client = null;
