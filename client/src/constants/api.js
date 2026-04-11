@@ -1,23 +1,26 @@
-// API Constants — VITE_API_URL should include https:// and /api (e.g. https://carbonix-me-1.vercel.app/api).
+// API Constants — VITE_API_URL should be a full URL (https://…/api). Without a scheme, the
+// browser treats values like "host/api/..." as a *path* on the current site → 404 on Google login.
 const DEFAULT_API_BASE = "https://carbonix-me-1.vercel.app/api";
 
 function withProtocol(url) {
-  const t = String(url).trim().replace(/\/$/, "");
-  if (!t) return DEFAULT_API_BASE;
-  if (/^https?:\/\//i.test(t)) return t;
-  return `https://${t}`;
+  const s = String(url || "").trim().replace(/\/$/, "");
+  if (!s) return DEFAULT_API_BASE;
+  if (/^https?:\/\//i.test(s)) return s;
+  return `https://${s.replace(/^\/+/, "")}`;
 }
 
 function resolveApiBaseUrl() {
   const raw = (import.meta.env.VITE_API_URL || "").trim();
-  if (!raw) return DEFAULT_API_BASE;
-  return withProtocol(raw);
+  return withProtocol(raw || DEFAULT_API_BASE);
 }
 
 export const API_BASE_URL = resolveApiBaseUrl();
 
-export const SOCKET_BASE_URL =
-  import.meta.env.VITE_SOCKET_URL || API_BASE_URL.replace(/\/api\/?$/, "");
+export const SOCKET_BASE_URL = (() => {
+  const raw = (import.meta.env.VITE_SOCKET_URL || "").trim();
+  if (raw) return withProtocol(raw);
+  return API_BASE_URL.replace(/\/api\/?$/, "");
+})();
 
 // API Endpoints
 export const API_ENDPOINTS = {

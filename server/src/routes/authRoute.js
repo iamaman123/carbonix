@@ -71,7 +71,10 @@ router.get("/oauth-config", (req, res) => {
 // Query: ?role=PRODUCER | CONSUMER (default CONSUMER). New users get this role.
 router.get("/google", (req, res, next) => {
   if (!config.google.clientId || !config.google.clientSecret) {
-    const clientBase = process.env.CLIENT_URL?.trim() || config.clientUrl;
+    const clientBase = (process.env.CLIENT_URL?.trim() || config.clientUrl).replace(
+      /\/+$/,
+      "",
+    );
     return res.redirect(`${clientBase}/login?error=google_not_configured`);
   }
 
@@ -89,7 +92,10 @@ router.get("/google", (req, res, next) => {
 });
 
 router.get("/google/callback", (req, res, next) => {
-  const clientBase = process.env.CLIENT_URL?.trim() || config.clientUrl;
+  const clientBase = (process.env.CLIENT_URL?.trim() || config.clientUrl).replace(
+    /\/+$/,
+    "",
+  );
 
   if (!config.google.clientId || !config.google.clientSecret) {
     return res.redirect(`${clientBase}/login?error=google_not_configured`);

@@ -94,8 +94,8 @@ const config = {
     keySecret: env("RAZORPAY_KEY_SECRET"),
   },
 
-  // Client URL
-  clientUrl: env("CLIENT_URL", "http://localhost:5173"),
+  // Client URL (SPA origin only; trailing slash stripped so redirects are never `//login`)
+  clientUrl: env("CLIENT_URL", "http://localhost:5173").replace(/\/+$/, ""),
 
   // Google OAuth Configuration
   google: {
