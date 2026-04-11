@@ -1,4 +1,4 @@
-# Carbonix — P2P energy & carbon credits marketplace
+# Carbonix 
 
 Full-stack demo for listing, discovering, and trading surplus renewable energy (and related environmental credits) with optional on-chain receipts via a small blockchain service.
 
