@@ -13,14 +13,19 @@ const googleSecret = config.google.clientSecret;
 export const isGoogleOAuthReady = Boolean(googleId && googleSecret);
 
 if (isGoogleOAuthReady) {
+  const strategyOptions = {
+    clientID: googleId,
+    clientSecret: googleSecret,
+    callbackURL: config.google.callbackUrl,
+    passReqToCallback: true,
+  };
+  if (process.env.VERCEL) {
+    strategyOptions.proxy = true;
+  }
+
   passport.use(
     new GoogleStrategy(
-      {
-        clientID: googleId,
-        clientSecret: googleSecret,
-        callbackURL: config.google.callbackUrl,
-        passReqToCallback: true,
-      },
+      strategyOptions,
       async (req, accessToken, refreshToken, profile, done) => {
         try {
           const email = profile.emails?.[0]?.value;

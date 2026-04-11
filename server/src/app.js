@@ -16,6 +16,11 @@ import chatRoutes from "./routes/chatRoute.js";
 
 const app = express();
 
+// Vercel terminates TLS at the edge; required for correct req.secure / forwarded host in some stacks.
+if (process.env.VERCEL) {
+  app.set("trust proxy", 1);
+}
+
 /** Vercel sets VERCEL=1; local dev uses local.js which connects before listen. */
 let vercelConnectPromise;
 const ensureMongoOnVercel = async (req, res, next) => {

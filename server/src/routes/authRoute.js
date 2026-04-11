@@ -59,14 +59,18 @@ router.patch("/profile", authMiddleware, updateProfile);
 /** Dev helper: confirms env (no secrets). Callback URL must be added in Google Console exactly. */
 router.get("/oauth-config", (req, res) => {
   const id = config.google.clientId || "";
+  const cb = config.google.callbackUrl || "";
   res.json({
     apiPort: config.port,
-    callbackUrlAddThisInGoogleConsole: config.google.callbackUrl,
+    /** OAuth uses callbackUrl only; apiPort is whatever PORT is in env (often 8000 locally). */
+    deployedOnVercel: Boolean(process.env.VERCEL),
+    callbackUrlAddThisInGoogleConsole: cb,
+    /** Public identifier — same string as in Google Cloud → Credentials → your Web client (not a secret). */
+    clientId: id,
     googleCloudWhereToAddIt:
-      "Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client IDs → open the Web client whose Client ID matches Vercel GOOGLE_CLIENT_ID → Authorized redirect URIs → + ADD URI → paste the callbackUrl exactly → Save.",
+      "Credentials → OAuth 2.0 Client IDs → this Web client → Authorized redirect URIs (not JavaScript origins). Paste callbackUrlAddThisInGoogleConsole exactly, Save, wait up to ~15 minutes.",
     hasClientId: Boolean(id),
     hasClientSecret: Boolean(config.google.clientSecret),
-    clientIdLastChars: id.length > 12 ? `…${id.slice(-12)}` : id,
   });
 });
 
