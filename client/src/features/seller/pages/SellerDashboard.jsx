@@ -44,7 +44,7 @@ const SellerDashboard = () => {
       setIsLoading(true);
       try {
         const API_BASE_URL =
-          import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+          import.meta.env.VITE_API_URL || "carbonix-me.vercel.app/api";
 
         // Fetch transactions
         const transactionsResponse = await axios.get(

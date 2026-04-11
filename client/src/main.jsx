@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/components/common/theme-provider";
 
 // Prefetch chatbot context in the background immediately on app load.
 // By the time the user opens the chatbot, data is already cached.
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const API_BASE = import.meta.env.VITE_API_URL || "carbonix-me.vercel.app/api";
 fetch(`${API_BASE}/chatbot/context`)
   .then((r) => r.json())
   .catch(() => {}); // silent — chatbot handles its own error state
