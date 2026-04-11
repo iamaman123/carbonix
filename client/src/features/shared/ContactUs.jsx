@@ -57,8 +57,8 @@ const ContactUs = () => {
             <CardContent className="text-sm text-muted-foreground">
               For order-specific or account issues, sign in with Google and use your dashboard and
               transaction history — that keeps support tied to your activity on Carbonix.
-            </CardContent>
-          </Card>
+                    </CardContent>
+                  </Card>
         </motion.div>
       </div>
     </div>

@@ -62,6 +62,8 @@ router.get("/oauth-config", (req, res) => {
   res.json({
     apiPort: config.port,
     callbackUrlAddThisInGoogleConsole: config.google.callbackUrl,
+    googleCloudWhereToAddIt:
+      "Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client IDs → open the Web client whose Client ID matches Vercel GOOGLE_CLIENT_ID → Authorized redirect URIs → + ADD URI → paste the callbackUrl exactly → Save.",
     hasClientId: Boolean(id),
     hasClientSecret: Boolean(config.google.clientSecret),
     clientIdLastChars: id.length > 12 ? `…${id.slice(-12)}` : id,
