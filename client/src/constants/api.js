@@ -1,7 +1,6 @@
-// API Constants — VITE_API_URL should be full URL with https (e.g. https://your-api.vercel.app/api). Not a Google client id.
-const DEFAULT_API_BASE = "https://carbonix-me.vercel.app/api";
+// API Constants — VITE_API_URL should include https:// and /api (e.g. https://carbonix-me-1.vercel.app/api).
+const DEFAULT_API_BASE = "https://carbonix-me-1.vercel.app/api";
 
-/** Ensure https:// so axios and window.open work. */
 function withProtocol(url) {
   const t = String(url).trim().replace(/\/$/, "");
   if (!t) return DEFAULT_API_BASE;

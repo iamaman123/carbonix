@@ -59,7 +59,7 @@ const ListingsPage = () => {
       setIsLoading(true);
       try {
         const API_BASE_URL =
-          import.meta.env.VITE_API_URL || "carbonix-me-1.vercel.app/api";
+          import.meta.env.VITE_API_URL || "https://carbonix-me-1.vercel.app/api";
         const response = await axios.get(
           `${API_BASE_URL}/credits/posted-data`,
           {
@@ -135,7 +135,7 @@ const ListingsPage = () => {
   const handleStatusChange = async (id, status) => {
     try {
       const API_BASE_URL =
-        import.meta.env.VITE_API_URL || "carbonix-me-1.vercel.app/api";
+        import.meta.env.VITE_API_URL || "https://carbonix-me-1.vercel.app/api";
       await axios.put(
         `${API_BASE_URL}/listings/${id}`,
         { status },

@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "@/constants/api";
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL || "carbonix-me.vercel.app/api"}/pricing`;
+const PRICING_BASE = `${API_BASE_URL}/pricing`;
 
 /**
  * Hook to fetch and manage dynamic pricing data
@@ -27,7 +28,7 @@ export const useDynamicPricing = (itemId, isProduct = false, autoFetch = true) =
 
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/${itemId}?isProduct=${isProduct}`
+        `${PRICING_BASE}/${itemId}?isProduct=${isProduct}`
       );
 
       if (response.data.success) {
@@ -54,7 +55,7 @@ export const useDynamicPricing = (itemId, isProduct = false, autoFetch = true) =
 
     if (shouldFallbackCalculate) {
       try {
-        const response = await axios.post(`${API_BASE_URL}/calculate`, {
+        const response = await axios.post(`${PRICING_BASE}/calculate`, {
           itemId,
           isProduct,
         });
@@ -88,7 +89,7 @@ export const useDynamicPricing = (itemId, isProduct = false, autoFetch = true) =
     setError(null);
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/calculate`, {
+      const response = await axios.post(`${PRICING_BASE}/calculate`, {
         itemId,
         isProduct,
       });
@@ -178,7 +179,7 @@ export const useMarketInsights = (autoFetch = true) => {
     setError(null);
 
     try {
-      const response = await axios.get(`${API_BASE_URL}/market/insights`);
+      const response = await axios.get(`${PRICING_BASE}/market/insights`);
 
       if (response.data.success) {
         setInsights(response.data.data);
