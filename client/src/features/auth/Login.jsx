@@ -37,7 +37,7 @@ const Login = () => {
     if (err === "google_auth_failed") {
       const detail =
         reason === "redirect_uri_mismatch"
-          ? "Redirect URI mismatch — in Google Cloud add exactly: carbonix-me.vercel.app/api/auth/google/callback"
+          ? "Redirect URI mismatch — on your API host set GOOGLE_CALLBACK_URL to https://YOUR-API-HOST/api/auth/google/callback and add that exact URL in Google Cloud → Credentials → redirect URIs."
           : reason
             ? `Google error: ${reason}`
             : "Please try again.";

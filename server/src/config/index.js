@@ -65,6 +65,7 @@ const config = {
   google: {
     clientId: env("GOOGLE_CLIENT_ID"),
     clientSecret: env("GOOGLE_CLIENT_SECRET"),
+    // Must be the full public URL of THIS API (including https). On Vercel set GOOGLE_CALLBACK_URL — never use localhost there.
     callbackUrl:
       env("GOOGLE_CALLBACK_URL") ||
       "http://localhost:8000/api/auth/google/callback",

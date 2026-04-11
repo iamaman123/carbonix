@@ -1,12 +1,18 @@
-// API Constants — VITE_API_URL must be a full URL (http:// or https://). Not a Google client id.
-const DEFAULT_API_BASE = "http://localhost:8000/api";
+// API Constants — VITE_API_URL should be full URL with https (e.g. https://your-api.vercel.app/api). Not a Google client id.
+const DEFAULT_API_BASE = "https://carbonix-me.vercel.app/api";
+
+/** Ensure https:// so axios and window.open work. */
+function withProtocol(url) {
+  const t = String(url).trim().replace(/\/$/, "");
+  if (!t) return DEFAULT_API_BASE;
+  if (/^https?:\/\//i.test(t)) return t;
+  return `https://${t}`;
+}
 
 function resolveApiBaseUrl() {
   const raw = (import.meta.env.VITE_API_URL || "").trim();
-  if (!raw || !/^https?:\/\//i.test(raw)) {
-    return DEFAULT_API_BASE;
-  }
-  return raw.replace(/\/$/, "");
+  if (!raw) return DEFAULT_API_BASE;
+  return withProtocol(raw);
 }
 
 export const API_BASE_URL = resolveApiBaseUrl();
