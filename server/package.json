@@ -9,7 +9,8 @@
     "seed": "node src/scripts/seedData.js",
     "seed-blogs": "node src/scripts/seedBlogs.js",
     "add-listings": "node src/scripts/addListingsToUsers.js",
-    "add-transactions": "node src/scripts/addTransactionsToConsumers.js"
+    "add-transactions": "node src/scripts/addTransactionsToConsumers.js",
+    "ensure-admin": "node src/scripts/ensureAdmin.js"
   },
   "keywords": [],
   "author": "",

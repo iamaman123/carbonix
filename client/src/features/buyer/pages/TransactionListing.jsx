@@ -16,8 +16,8 @@ const TransactionListing = () => {
   const [loading, setLoading] = useState(true);
 
   const userRole = user?.role;
-  const isBuyer = userRole === "CONSUMER" || userRole === "BOTH";
-  const isSeller = userRole === "PRODUCER" || userRole === "BOTH";
+  const isBuyer = userRole === "CONSUMER" || userRole === "PRODUCER";
+  const isSeller = userRole === "PRODUCER";
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -315,7 +315,7 @@ const TransactionListing = () => {
         </div>
 
         {showTabs ? (
-          /* Tabbed view for users with BOTH roles */
+          /* Tabbed view for producers (buy + sell) */
           <Tabs defaultValue={defaultTab} className="space-y-6">
             <TabsList className="grid w-full max-w-sm grid-cols-2">
               <TabsTrigger value="purchases">

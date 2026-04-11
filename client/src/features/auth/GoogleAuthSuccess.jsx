@@ -63,7 +63,6 @@ const GoogleAuthSuccess = () => {
       const role = user.role;
       if (role === "PRODUCER") navigate("/dashboard/producer");
       else if (role === "CONSUMER") navigate("/dashboard/consumer");
-      else if (role === "BOTH") navigate("/dashboard");
       else if (role === "admin") navigate("/admin");
       else navigate("/");
     }, 400);

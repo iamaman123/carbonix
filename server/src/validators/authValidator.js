@@ -30,11 +30,11 @@ export const registerSchema = Joi.object({
       "string.max": "Name must not exceed 100 characters",
     }),
   role: Joi.string()
-    .valid("PRODUCER", "CONSUMER", "BOTH")
-    .required()
+    .valid("CONSUMER")
+    .optional()
+    .default("CONSUMER")
     .messages({
-      "any.required": "Role is required",
-      "any.only": "Role must be either PRODUCER, CONSUMER, or BOTH",
+      "any.only": "Sign-ups use CONSUMER; request producer access after login.",
     }),
 });
 

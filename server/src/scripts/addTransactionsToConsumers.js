@@ -49,9 +49,8 @@ const addTransactionsToConsumers = async () => {
     await connect();
     logger.info("Connected to database");
 
-    // Get all consumers and users with BOTH role
-    const consumers = await User.find({ 
-      role: { $in: ["CONSUMER", "BOTH"] } 
+    const consumers = await User.find({
+      role: { $in: ["CONSUMER", "PRODUCER"] }
     });
     
     logger.info(`Found ${consumers.length} consumer/both users`);
@@ -118,8 +117,7 @@ const addTransactionsToConsumers = async () => {
         listing.seller.transactions.push(transaction._id);
         await listing.seller.save();
 
-        // Update seller's totalSpents if they're also a buyer (for BOTH role users)
-        if (consumer.role === "BOTH") {
+        if (consumer.role === "PRODUCER") {
           consumer.totalSpents = (consumer.totalSpents || 0) + totalAmount;
         }
 

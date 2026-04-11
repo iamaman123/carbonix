@@ -1,3 +1,6 @@
+# Local notes (not shared)
+work.md
+
 # Editor / OS (keep machine-specific settings out of the repo)
 .vscode/
 .idea/

@@ -316,7 +316,8 @@ const AdminDashboard = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All roles</SelectItem>
-                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="CONSUMER">Consumer</SelectItem>
+                    <SelectItem value="PRODUCER">Producer</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                   </SelectContent>
                 </Select>
@@ -359,16 +360,17 @@ const AdminDashboard = () => {
                         <TableCell>{u.name || "—"}</TableCell>
                         <TableCell>
                           <Select
-                            value={u.role || "user"}
+                            value={u.role || "CONSUMER"}
                             onValueChange={(value) =>
                               updateUserRole(u._id, value)
                             }
                           >
-                            <SelectTrigger className="w-32">
+                            <SelectTrigger className="w-36">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="user">User</SelectItem>
+                              <SelectItem value="CONSUMER">Consumer</SelectItem>
+                              <SelectItem value="PRODUCER">Producer</SelectItem>
                               <SelectItem value="admin">Admin</SelectItem>
                             </SelectContent>
                           </Select>

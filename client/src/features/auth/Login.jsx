@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { CheckCircle } from "lucide-react";
@@ -10,8 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import auth from "/auth.jpg";
 import { toast } from "sonner";
 import { absoluteApiUrl } from "@/constants/api";
@@ -21,15 +19,11 @@ const POPUP_FEATURES =
   "width=520,height=680,scrollbars=yes,resizable=yes,left=80,top=40";
 
 const Login = () => {
-  const [role, setRole] = useState("CONSUMER");
   const [searchParams] = useSearchParams();
   const { setUser } = useAuth();
   const navigate = useNavigate();
 
-  const googleAuthUrl = useMemo(
-    () => absoluteApiUrl(`/auth/google?role=${encodeURIComponent(role)}`),
-    [role],
-  );
+  const googleAuthUrl = useMemo(() => absoluteApiUrl("/auth/google"), []);
 
   useEffect(() => {
     const err = searchParams.get("error");
@@ -64,7 +58,6 @@ const Login = () => {
       const r = user.role;
       if (r === "PRODUCER") navigate("/dashboard/producer");
       else if (r === "CONSUMER") navigate("/dashboard/consumer");
-      else if (r === "BOTH") navigate("/dashboard");
       else if (r === "admin") navigate("/admin");
       else navigate("/");
     };
@@ -99,9 +92,9 @@ const Login = () => {
               Welcome to Carbonix
             </h1>
             <p className="max-w-xl text-lg text-muted-foreground">
-              A small window opens for Google — you pick your account there. This page
-              stays open. New accounts choose producer or consumer once before
-              continuing.
+              A small window opens for Google — you pick your account there. New accounts
+              start as buyers (consumers). To sell energy, request producer access from your
+              dashboard after sign-in.
             </p>
             <div className="grid max-w-xl gap-4 sm:grid-cols-2">
               {[
@@ -138,55 +131,11 @@ const Login = () => {
                 Sign in
               </CardTitle>
               <CardDescription className="text-sm text-muted-foreground">
-                Pick your role, then continue with Google. If you already have an
-                account, your existing role is kept.
+                Continue with Google. New users are registered as consumers; admins can
+                approve producer (seller) access after you submit a request.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-3">
-                <Label className="text-sm font-medium text-foreground">
-                  I am signing up / in as
-                </Label>
-                <RadioGroup
-                  value={role}
-                  onValueChange={setRole}
-                  className="grid gap-3"
-                >
-                  <label
-                    htmlFor="role-consumer"
-                    className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition-all ${
-                      role === "CONSUMER"
-                        ? "border-primary bg-primary/5"
-                        : "border-border/60 hover:border-border"
-                    }`}
-                  >
-                    <RadioGroupItem value="CONSUMER" id="role-consumer" />
-                    <div className="text-left">
-                      <p className="font-medium text-foreground">Consumer</p>
-                      <p className="text-xs text-muted-foreground">
-                        Buy energy on the marketplace
-                      </p>
-                    </div>
-                  </label>
-                  <label
-                    htmlFor="role-producer"
-                    className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition-all ${
-                      role === "PRODUCER"
-                        ? "border-primary bg-primary/5"
-                        : "border-border/60 hover:border-border"
-                    }`}
-                  >
-                    <RadioGroupItem value="PRODUCER" id="role-producer" />
-                    <div className="text-left">
-                      <p className="font-medium text-foreground">Producer</p>
-                      <p className="text-xs text-muted-foreground">
-                        List and sell surplus energy
-                      </p>
-                    </div>
-                  </label>
-                </RadioGroup>
-              </div>
-
               <Button
                 type="button"
                 className="h-12 w-full rounded-xl bg-background text-sm font-semibold text-foreground transition-all hover:bg-muted/50 hover:shadow-sm border border-border"
@@ -218,9 +167,8 @@ const Login = () => {
               </Button>
 
               <p className="text-center text-xs text-muted-foreground leading-relaxed">
-                First time? We create your account after Google approves. Returning
-                users sign in with the same Google account; your dashboard role does
-                not change based on this choice.
+                First time? We create a consumer account after Google approves. Returning
+                users keep their existing role (consumer, approved producer, or admin).
               </p>
             </CardContent>
           </Card>

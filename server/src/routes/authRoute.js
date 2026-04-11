@@ -34,18 +34,6 @@ function encodeOAuthState(role) {
   );
 }
 
-function decodeOAuthState(stateParam) {
-  if (typeof stateParam !== "string" || !stateParam.length) return "CONSUMER";
-  try {
-    const o = JSON.parse(Buffer.from(stateParam, "base64url").toString("utf8"));
-    if (!o.ts || Date.now() - o.ts > OAUTH_STATE_MAX_AGE_MS) return "CONSUMER";
-    if (o.role === "PRODUCER" || o.role === "CONSUMER") return o.role;
-  } catch {
-    /* ignore */
-  }
-  return "CONSUMER";
-}
-
 // ─── Email / Password Auth (disabled — Google only) ───────────────────────────
 router.post("/register", validate(registerSchema), rateLimiter(5, 15 * 60 * 1000, "register"), register);
 router.post("/verify-otp", validate(verifyOTPSchema), rateLimiter(3, 15 * 60 * 1000, "verify-otp"), verifyOTP);
@@ -74,7 +62,7 @@ router.get("/oauth-config", (req, res) => {
   });
 });
 
-// Query: ?role=PRODUCER | CONSUMER (default CONSUMER). New users get this role.
+// New Google accounts always become CONSUMER; producer is granted by admin after request.
 router.get("/google", (req, res, next) => {
   if (!config.google.clientId || !config.google.clientSecret) {
     const clientBase = (process.env.CLIENT_URL?.trim() || config.clientUrl).replace(
@@ -84,11 +72,9 @@ router.get("/google", (req, res, next) => {
     return res.redirect(`${clientBase}/login?error=google_not_configured`);
   }
 
-  const roleParam = (req.query.role || "CONSUMER").toString().toUpperCase();
-  const role = ["PRODUCER", "CONSUMER"].includes(roleParam) ? roleParam : "CONSUMER";
-  const state = encodeOAuthState(role);
+  const state = encodeOAuthState("CONSUMER");
 
-  logger.info(`Google OAuth: redirect to consent (role=${role}, callback=${config.google.callbackUrl})`);
+  logger.info(`Google OAuth: redirect to consent (callback=${config.google.callbackUrl})`);
 
   passport.authenticate("google", {
     scope: ["profile", "email"],
@@ -114,9 +100,6 @@ router.get("/google/callback", (req, res, next) => {
     const reason = encodeURIComponent(String(req.query.error));
     return res.redirect(`${clientBase}/login?error=google_auth_failed&reason=${reason}`);
   }
-
-  const stateParam = typeof req.query.state === "string" ? req.query.state : "";
-  req.oauthSignupRole = decodeOAuthState(stateParam);
 
   passport.authenticate("google", { session: false }, (err, user) => {
     if (err) {

@@ -1,33 +1,18 @@
-// API base must be absolute. Without "https://", the browser treats "host/api/..." as a path on
-// the *current* SPA origin → Vercel 404 after you pick a Google account (OAuth never hits the API).
-const DEFAULT_API_BASE = "https://carbonix-me-1.vercel.app/api";
-
-function withProtocol(url) {
-  const s = String(url || "").trim().replace(/\/$/, "");
-  if (!s) return DEFAULT_API_BASE;
-  if (/^https?:\/\//i.test(s)) return s;
-  return `https://${s.replace(/^\/+/, "")}`;
-}
+// API Constants — VITE_API_URL must be a full URL (http:// or https://). Not a Google client id.
+const DEFAULT_API_BASE = "carbonix-me-1.vercel.app/api";
 
 function resolveApiBaseUrl() {
   const raw = (import.meta.env.VITE_API_URL || "").trim();
-  return withProtocol(raw || DEFAULT_API_BASE);
+  if (!raw || !/^https?:\/\//i.test(raw)) {
+    return DEFAULT_API_BASE;
+  }
+  return raw.replace(/\/$/, "");
 }
 
 export const API_BASE_URL = resolveApiBaseUrl();
 
-export const SOCKET_BASE_URL = (() => {
-  const raw = (import.meta.env.VITE_SOCKET_URL || "").trim();
-  if (raw) return withProtocol(raw);
-  return API_BASE_URL.replace(/\/api\/?$/, "");
-})();
-
-/** For window.open() so Google OAuth always opens the API host, never a relative URL. */
-export function absoluteApiUrl(path) {
-  const base = API_BASE_URL.replace(/\/$/, "");
-  const p = path.startsWith("/") ? path : `/${path}`;
-  return withProtocol(base) + p;
-}
+export const SOCKET_BASE_URL =
+  import.meta.env.VITE_SOCKET_URL || API_BASE_URL.replace(/\/api\/?$/, "");
 
 // API Endpoints
 export const API_ENDPOINTS = {
@@ -117,11 +102,10 @@ export const PAGINATION = {
   },
 };
 
-// Role Constants
+// Role Constants (API user.role)
 export const ROLES = {
-  BUYER: "buyer",
-  SELLER: "seller",
-  BOTH: "both",
+  CONSUMER: "CONSUMER",
+  PRODUCER: "PRODUCER",
   ADMIN: "admin",
 };
 

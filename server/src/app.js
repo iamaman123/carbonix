@@ -13,6 +13,7 @@ import chatbotRoutes from "./routes/chatbotRoute.js";
 import pricingRoutes from "./routes/pricingRoute.js";
 import blogRoutes from "./routes/blogRoute.js";
 import chatRoutes from "./routes/chatRoute.js";
+import producerRequestRoutes from "./routes/producerRequestRoute.js";
 
 const app = express();
 
@@ -63,6 +64,7 @@ app.get("/favicon.ico", (_req, res) => res.status(204).end());
 app.get("/favicon.png", (_req, res) => res.status(204).end());
 
 app.use("/api/auth", userRoutes);
+app.use("/api/producer-requests", producerRequestRoutes);
 app.use("/api/credits", carbonCreditRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/analytics", analyticsRoutes);

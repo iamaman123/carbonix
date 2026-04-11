@@ -11,7 +11,7 @@ const seed = async () => {
         await mongoose.connect(process.env.MONGODB_URI);
         console.log("Connected to MongoDB for seeding...");
 
-        let user = await User.findOne({ role: { $in: ["PRODUCER", "BOTH"] } }) || await User.findOne();
+        let user = await User.findOne({ role: "PRODUCER" }) || await User.findOne();
         if (!user) {
             console.log("No users found. Creating a dummy user.");
             user = await User.create({

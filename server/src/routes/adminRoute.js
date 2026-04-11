@@ -9,6 +9,10 @@ import {
   getPendingListings,
   reviewListing,
 } from "../controllers/adminController.js";
+import {
+  listProducerRequests,
+  reviewProducerRequest,
+} from "../controllers/producerRequestController.js";
 import { isAdmin } from "../middlewares/adminMiddleware.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
@@ -38,5 +42,9 @@ router.delete("/listings/:listingId", adminDeleteListing);
 // Listing moderation
 router.get("/listings/pending", getPendingListings);
 router.patch("/listings/:listingId/review", reviewListing);
+
+// Producer requests (consumer → producer approval flow)
+router.get("/producer-requests", listProducerRequests);
+router.patch("/producer-requests/:requestId", reviewProducerRequest);
 
 export default router;

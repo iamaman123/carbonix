@@ -141,8 +141,8 @@ const addListingsToUsers = async () => {
     let totalListingsCreated = 0;
 
     for (const user of users) {
-      // Only create listings for PRODUCER and BOTH roles
-      if (user.role !== "PRODUCER" && user.role !== "BOTH") {
+      // Only create listings for PRODUCER
+      if (user.role !== "PRODUCER") {
         logger.info(`Skipping ${user.email} (role: ${user.role})`);
         continue;
       }

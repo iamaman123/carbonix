@@ -50,11 +50,9 @@ function GlobeSection() {
       ? "/form"
       : user.role === "CONSUMER"
         ? "/marketplace"
-        : user.role === "BOTH"
-          ? "/dashboard"
-          : user.role === "admin"
-            ? "/admin"
-            : "/profile";
+        : user.role === "admin"
+          ? "/admin"
+          : "/profile";
 
   const ctaLabel = !user
     ? "Get Started"

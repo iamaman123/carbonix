@@ -157,7 +157,6 @@ export const getChatableUsers = async (req, res) => {
     const roleFilter = (() => {
       if (userRole === "PRODUCER") return "CONSUMER";
       if (userRole === "CONSUMER") return "PRODUCER";
-      if (userRole === "BOTH") return { $in: ["PRODUCER", "CONSUMER"] };
       return { $ne: userRole };
     })();
 

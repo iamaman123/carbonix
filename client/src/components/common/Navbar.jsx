@@ -14,6 +14,9 @@ import {
   Settings,
   ShieldCheck,
   ShoppingCart,
+  UserPlus,
+  ClipboardCheck,
+  Users,
 } from "lucide-react";
 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -154,10 +157,24 @@ const Navbar = () => {
               >
                 Manage Blogs
               </DesktopNavLink>
+              <DesktopNavLink
+                to="/admin/producer-requests"
+                hoveredPath={hoveredPath}
+                setHoveredPath={setHoveredPath}
+              >
+                Producer requests
+              </DesktopNavLink>
+              <DesktopNavLink
+                to="/admin/producers"
+                hoveredPath={hoveredPath}
+                setHoveredPath={setHoveredPath}
+              >
+                Producers
+              </DesktopNavLink>
             </>
           )}
 
-          {(user?.role === "PRODUCER" || user?.role === "BOTH") && (
+          {user?.role === "PRODUCER" && (
             <DesktopNavLink
               to="/form"
               hoveredPath={hoveredPath}
@@ -167,7 +184,7 @@ const Navbar = () => {
             </DesktopNavLink>
           )}
 
-          {(user?.role === "CONSUMER" || user?.role === "BOTH") && (
+          {(user?.role === "CONSUMER" || user?.role === "PRODUCER") && (
             <DesktopNavLink
               to="/marketplace"
               hoveredPath={hoveredPath}
@@ -177,17 +194,23 @@ const Navbar = () => {
             </DesktopNavLink>
           )}
 
+          {user?.role === "CONSUMER" && (
+            <DesktopNavLink
+              to="/request-producer"
+              hoveredPath={hoveredPath}
+              setHoveredPath={setHoveredPath}
+            >
+              Become a producer
+            </DesktopNavLink>
+          )}
+
           {user &&
-            (user.role === "PRODUCER" ||
-              user.role === "CONSUMER" ||
-              user.role === "BOTH") && (
+            (user.role === "PRODUCER" || user.role === "CONSUMER") && (
               <DesktopNavLink
                 to={
                   user.role === "PRODUCER"
                     ? "/dashboard/producer"
-                    : user.role === "CONSUMER"
-                      ? "/dashboard/consumer"
-                      : "/dashboard"
+                    : "/dashboard/consumer"
                 }
                 hoveredPath={hoveredPath}
                 setHoveredPath={setHoveredPath}
@@ -314,16 +337,30 @@ const Navbar = () => {
                   >
                     Manage Blogs
                   </MobileNavLink>
+                  <MobileNavLink
+                    to="/admin/producer-requests"
+                    onClick={closeSheet}
+                    icon={ClipboardCheck}
+                  >
+                    Producer requests
+                  </MobileNavLink>
+                  <MobileNavLink
+                    to="/admin/producers"
+                    onClick={closeSheet}
+                    icon={Users}
+                  >
+                    Producers
+                  </MobileNavLink>
                 </>
               )}
 
-              {(user?.role === "PRODUCER" || user?.role === "BOTH") && (
+              {user?.role === "PRODUCER" && (
                 <MobileNavLink to="/form" onClick={closeSheet} icon={Zap}>
                   Sell Energy
                 </MobileNavLink>
               )}
 
-              {(user?.role === "CONSUMER" || user?.role === "BOTH") && (
+              {(user?.role === "CONSUMER" || user?.role === "PRODUCER") && (
                 <MobileNavLink
                   to="/marketplace"
                   onClick={closeSheet}
@@ -333,17 +370,23 @@ const Navbar = () => {
                 </MobileNavLink>
               )}
 
+              {user?.role === "CONSUMER" && (
+                <MobileNavLink
+                  to="/request-producer"
+                  onClick={closeSheet}
+                  icon={UserPlus}
+                >
+                  Become a producer
+                </MobileNavLink>
+              )}
+
               {user &&
-                (user.role === "PRODUCER" ||
-                  user.role === "CONSUMER" ||
-                  user.role === "BOTH") && (
+                (user.role === "PRODUCER" || user.role === "CONSUMER") && (
                   <MobileNavLink
                     to={
                       user.role === "PRODUCER"
                         ? "/dashboard/producer"
-                        : user.role === "CONSUMER"
-                          ? "/dashboard/consumer"
-                          : "/dashboard"
+                        : "/dashboard/consumer"
                     }
                     onClick={closeSheet}
                     icon={Home}

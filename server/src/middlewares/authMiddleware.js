@@ -40,11 +40,6 @@ const roleMiddleware = (allowedRoles) => {
 
     const userRole = req.user.role;
 
-    // Handle BOTH role - can access both PRODUCER and CONSUMER routes
-    if (userRole === "BOTH") {
-      return next();
-    }
-
     // Check if user's role is in the allowed roles
     if (!allowedRoles.includes(userRole)) {
       logger.warn(`User with role ${userRole} attempted to access route requiring ${allowedRoles.join(", ")}`);

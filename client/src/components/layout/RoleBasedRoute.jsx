@@ -11,15 +11,11 @@ export const RoleBasedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (user.role === "BOTH") {
-    return children;
-  }
-
   if (!allowedRoles.includes(user.role)) {
     if (user.role === "admin") return <Navigate to="/admin" replace />;
     if (user.role === "PRODUCER") return <Navigate to="/dashboard/producer" replace />;
     if (user.role === "CONSUMER") return <Navigate to="/dashboard/consumer" replace />;
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/dashboard/consumer" replace />;
   }
 
   return children;

@@ -4,8 +4,6 @@ import User from "../models/userModel.js";
 import config from "./index.js";
 import logger from "../utils/logger.js";
 
-const allowedSignupRoles = ["PRODUCER", "CONSUMER"];
-
 const googleId = config.google.clientId;
 const googleSecret = config.google.clientSecret;
 
@@ -38,20 +36,17 @@ if (isGoogleOAuthReady) {
           });
 
           if (!user) {
-            const rawRole = req.oauthSignupRole || "CONSUMER";
-            const role = allowedSignupRoles.includes(rawRole) ? rawRole : "CONSUMER";
-
             user = await User.create({
               email,
               googleId: profile.id,
               name: profile.displayName || email.split("@")[0],
               avatar: profile.photos?.[0]?.value || "",
               authProvider: "google",
-              role,
+              role: "CONSUMER",
               isVerified: true,
               password: null,
             });
-            logger.info(`Google OAuth: new user created for ${email} as ${role}`);
+            logger.info(`Google OAuth: new user created for ${email} as CONSUMER`);
             return done(null, user);
           }
 

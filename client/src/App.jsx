@@ -23,7 +23,6 @@ import {
   MarketInsightsPage,
 } from "./features/shared";
 import UserDashboard from "./features/shared/UserDashboard";
-import CombinedDashboard from "./features/shared/CombinedDashboard";
 import Navbar from "./components/common/Navbar";
 import Footer from "./components/common/Footer";
 import { LandingPage } from "./features/landing";
@@ -34,7 +33,15 @@ import {
 import ProducerDashboard from "./features/seller/ProducerDashboard";
 import { Marketplace, TransactionListing } from "./features/buyer";
 import ConsumerDashboard from "./features/buyer/ConsumerDashboard";
-import { AdminDashboard, AdminEcoProducts, AdminBlogs, AdminListings } from "./features/admin";
+import {
+  AdminDashboard,
+  AdminEcoProducts,
+  AdminBlogs,
+  AdminListings,
+  AdminProducerRequests,
+  AdminProducers,
+} from "./features/admin";
+import RequestProducer from "./features/producer/RequestProducer";
 import BuyerAnalytics from "./features/buyer/pages/BuyerAnalytics";
 import SellerAnalytics from "./features/seller/pages/SellerAnalytics";
 
@@ -73,32 +80,32 @@ const App = () => {
               <Route path="/eco-marketplace" element={<EcoMarketplace />} />
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
-                {/* Producer Dashboard - for PRODUCER and BOTH roles */}
+                {/* Producer Dashboard (approved sellers) */}
                 <Route
                   path="/dashboard/producer"
                   element={
-                    <RoleBasedRoute allowedRoles={["PRODUCER", "BOTH"]}>
+                    <RoleBasedRoute allowedRoles={["PRODUCER"]}>
                       <ProducerDashboard />
                     </RoleBasedRoute>
                   }
                 />
 
-                {/* Consumer Dashboard - for CONSUMER and BOTH roles */}
+                {/* Consumer Dashboard (default accounts) */}
                 <Route
                   path="/dashboard/consumer"
                   element={
-                    <RoleBasedRoute allowedRoles={["CONSUMER", "BOTH"]}>
+                    <RoleBasedRoute allowedRoles={["CONSUMER"]}>
                       <ConsumerDashboard />
                     </RoleBasedRoute>
                   }
                 />
 
-                {/* Combined Dashboard - for BOTH role only */}
+                {/* Request producer (seller) access — consumers only */}
                 <Route
-                  path="/dashboard"
+                  path="/request-producer"
                   element={
-                    <RoleBasedRoute allowedRoles={["BOTH"]}>
-                      <CombinedDashboard />
+                    <RoleBasedRoute allowedRoles={["CONSUMER"]}>
+                      <RequestProducer />
                     </RoleBasedRoute>
                   }
                 />
@@ -113,11 +120,11 @@ const App = () => {
                   }
                 />
 
-                {/* Marketplace - accessible by CONSUMER and BOTH */}
+                {/* Marketplace — buyers and approved producers can purchase */}
                 <Route
                   path="/marketplace"
                   element={
-                    <RoleBasedRoute allowedRoles={["CONSUMER", "BOTH"]}>
+                    <RoleBasedRoute allowedRoles={["CONSUMER", "PRODUCER"]}>
                       <Marketplace />
                     </RoleBasedRoute>
                   }
@@ -125,17 +132,17 @@ const App = () => {
                 <Route
                   path="/market"
                   element={
-                    <RoleBasedRoute allowedRoles={["CONSUMER", "BOTH"]}>
+                    <RoleBasedRoute allowedRoles={["CONSUMER", "PRODUCER"]}>
                       <Marketplace />
                     </RoleBasedRoute>
                   }
                 />
 
-                {/* Listings - accessible by PRODUCER and BOTH */}
+                {/* Listings — producers only */}
                 <Route
                   path="/listings"
                   element={
-                    <RoleBasedRoute allowedRoles={["PRODUCER", "BOTH"]}>
+                    <RoleBasedRoute allowedRoles={["PRODUCER"]}>
                       <ListingsPage />
                     </RoleBasedRoute>
                   }
@@ -143,19 +150,17 @@ const App = () => {
                 <Route
                   path="/form"
                   element={
-                    <RoleBasedRoute allowedRoles={["PRODUCER", "BOTH"]}>
+                    <RoleBasedRoute allowedRoles={["PRODUCER"]}>
                       <CreateListingPage />
                     </RoleBasedRoute>
                   }
                 />
 
-                {/* Payment and Transactions - accessible by all energy trading roles */}
+                {/* Payment and Transactions */}
                 <Route
                   path="/payment"
                   element={
-                    <RoleBasedRoute
-                      allowedRoles={["PRODUCER", "CONSUMER", "BOTH"]}
-                    >
+                    <RoleBasedRoute allowedRoles={["PRODUCER", "CONSUMER"]}>
                       <TransactionPage />
                     </RoleBasedRoute>
                   }
@@ -163,9 +168,7 @@ const App = () => {
                 <Route
                   path="/transaction-listing"
                   element={
-                    <RoleBasedRoute
-                      allowedRoles={["PRODUCER", "CONSUMER", "BOTH"]}
-                    >
+                    <RoleBasedRoute allowedRoles={["PRODUCER", "CONSUMER"]}>
                       <TransactionListing />
                     </RoleBasedRoute>
                   }
@@ -175,9 +178,7 @@ const App = () => {
                 <Route
                   path="/market-insights"
                   element={
-                    <RoleBasedRoute
-                      allowedRoles={["PRODUCER", "CONSUMER", "BOTH"]}
-                    >
+                    <RoleBasedRoute allowedRoles={["PRODUCER", "CONSUMER"]}>
                       <MarketInsightsPage />
                     </RoleBasedRoute>
                   }
@@ -185,7 +186,7 @@ const App = () => {
                 <Route
                   path="/buyer-analytics"
                   element={
-                    <RoleBasedRoute allowedRoles={["CONSUMER", "BOTH"]}>
+                    <RoleBasedRoute allowedRoles={["CONSUMER", "PRODUCER"]}>
                       <BuyerAnalytics />
                     </RoleBasedRoute>
                   }
@@ -193,7 +194,7 @@ const App = () => {
                 <Route
                   path="/seller-analytics"
                   element={
-                    <RoleBasedRoute allowedRoles={["PRODUCER", "BOTH"]}>
+                    <RoleBasedRoute allowedRoles={["PRODUCER"]}>
                       <SellerAnalytics />
                     </RoleBasedRoute>
                   }
@@ -229,6 +230,22 @@ const App = () => {
                   element={
                     <RoleBasedRoute allowedRoles={["admin"]}>
                       <AdminBlogs />
+                    </RoleBasedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/producer-requests"
+                  element={
+                    <RoleBasedRoute allowedRoles={["admin"]}>
+                      <AdminProducerRequests />
+                    </RoleBasedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/producers"
+                  element={
+                    <RoleBasedRoute allowedRoles={["admin"]}>
+                      <AdminProducers />
                     </RoleBasedRoute>
                   }
                 />
