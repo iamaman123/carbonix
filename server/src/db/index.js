@@ -28,16 +28,20 @@ const configureMongoDnsResolvers = () => {
 };
 
 const connect = async () => {
+  if (mongoose.connection.readyState === 1) {
+    return;
+  }
+
   configureMongoDnsResolvers();
 
   const primaryUri = config.mongodb.uri || process.env.MONGODB_URI?.trim();
   const fallbackUri = process.env.MONGODB_URI_DIRECT?.trim();
 
   if (!primaryUri && !fallbackUri) {
-    logger.error(
-      "MongoDb connection error: MONGODB_URI (or MONGODB_URI_DIRECT) is not defined",
-    );
-    process.exit(1);
+    const msg =
+      "MONGODB_URI (or MONGODB_URI_DIRECT) is not defined — set it in Vercel → Environment Variables (Production + Preview) and redeploy.";
+    logger.error(`MongoDb connection error: ${msg}`);
+    throw new Error(msg);
   }
 
   const candidates = [primaryUri, fallbackUri].filter(Boolean);
@@ -58,11 +62,15 @@ const connect = async () => {
     }
   }
 
+  const hint =
+    "If mongodb+srv DNS fails (ECONNREFUSED/querySrv), set MONGODB_DNS_SERVERS=8.8.8.8,1.1.1.1 and/or add MONGODB_URI_DIRECT using Atlas standard (non-SRV) URI.";
   logger.error("MongoDb connection error: all configured URIs failed", {
     attempts: errors,
-    hint: "If mongodb+srv DNS fails (ECONNREFUSED/querySrv), set MONGODB_DNS_SERVERS=8.8.8.8,1.1.1.1 and/or add MONGODB_URI_DIRECT in server/.env using Atlas standard (non-SRV) URI.",
+    hint,
   });
-  process.exit(1);
+  throw new Error(
+    `MongoDB connection failed for all configured URIs. ${hint}`,
+  );
 };
 
 export default connect;

@@ -4,7 +4,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon index.js",
+    "dev": "nodemon local.js",
+    "start": "node local.js",
     "seed": "node src/scripts/seedData.js",
     "seed-blogs": "node src/scripts/seedBlogs.js",
     "add-listings": "node src/scripts/addListingsToUsers.js",
