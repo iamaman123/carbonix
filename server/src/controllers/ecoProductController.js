@@ -3,7 +3,7 @@ import EcoOrder from "../models/EcoOrder.js";
 import userModel from "../models/userModel.js";
 import logger from "../utils/logger.js";
 import config from "../config/index.js";
-import { getRazorpay, verifyRazorpayPaymentSignature } from "../utils/razorpayClient.js";
+import { getRazorpay, getRazorpayErrorMessage, verifyRazorpayPaymentSignature } from "../utils/razorpayClient.js";
 
 async function completeEcoOrderPurchase(orderId, paymentExtras = {}) {
   const order = await EcoOrder.findById(orderId);
@@ -438,6 +438,7 @@ export const getEcoStats = async (req, res) => {
 // AUTHENTICATED: Create Razorpay order (client opens Razorpay Checkout)
 // ==============================
 export const createCheckoutSession = async (req, res) => {
+  let pendingOrderId = null;
   try {
     const buyerId = req.user.userId;
     const { productId, quantity, shippingAddress } = req.body;
@@ -486,10 +487,12 @@ export const createCheckoutSession = async (req, res) => {
     });
 
     await order.save();
+    pendingOrderId = order._id;
 
     const rz = getRazorpay();
     if (!rz) {
       await EcoOrder.findByIdAndDelete(order._id);
+      pendingOrderId = null;
       return res.status(503).json({
         success: false,
         message: "Payments are not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in server/.env.",
@@ -497,6 +500,14 @@ export const createCheckoutSession = async (req, res) => {
     }
 
     const amountPaise = Math.round(totalAmount * 100);
+    if (amountPaise < 100) {
+      await EcoOrder.findByIdAndDelete(order._id);
+      pendingOrderId = null;
+      return res.status(400).json({
+        success: false,
+        message: "Minimum order total is ₹1.00 for online payment. Increase quantity or choose another product.",
+      });
+    }
     const receipt = String(order._id).replace(/[^a-zA-Z0-9]/g, "").slice(-40) || `eco${Date.now()}`;
 
     const rpOrder = await rz.orders.create({
@@ -534,11 +545,15 @@ export const createCheckoutSession = async (req, res) => {
       },
     });
   } catch (error) {
+    const detail = getRazorpayErrorMessage(error) || error?.message || "Unknown error";
     logger.error("Error creating checkout session:", error);
+    if (pendingOrderId) {
+      await EcoOrder.findByIdAndDelete(pendingOrderId).catch(() => {});
+    }
     res.status(500).json({
       success: false,
-      message: "Failed to create checkout session",
-      error: error.message,
+      message: `Checkout failed: ${detail}`,
+      error: detail,
     });
   }
 };

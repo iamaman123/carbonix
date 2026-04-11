@@ -7,7 +7,7 @@ import { sendNotificationEmail, emailTemplates } from "../utils/emailNotificatio
 import { generateReceiptData } from "../utils/receiptGenerator.js";
 import { validateListingAuthenticity } from "../services/listingModerationService.js";
 import config from "../config/index.js";
-import { getRazorpay, verifyRazorpayPaymentSignature } from "../utils/razorpayClient.js";
+import { getRazorpay, getRazorpayErrorMessage, verifyRazorpayPaymentSignature } from "../utils/razorpayClient.js";
 
 /** Atomically mark a credit transaction completed and apply listing + user balances. */
 async function completeCreditPurchase(transactionId, paymentExtras = {}) {
@@ -577,6 +577,7 @@ export const getReceipt = async (req, res) => {
 
 // ✅ Create Razorpay order for carbon credit purchase (client opens Razorpay Checkout)
 export const createCreditCheckoutSession = async (req, res) => {
+  let pendingTransactionId = null;
   try {
     const buyerId = req.user.userId;
     const { listingId, quantity } = req.body;
@@ -614,10 +615,12 @@ export const createCreditCheckoutSession = async (req, res) => {
       transactionHash,
     });
     await transaction.save();
+    pendingTransactionId = transaction._id;
 
     const rz = getRazorpay();
     if (!rz) {
       await transactionsModel.findByIdAndDelete(transaction._id);
+      pendingTransactionId = null;
       return res.status(503).json({
         success: false,
         message: "Payments are not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in server/.env.",
@@ -654,8 +657,16 @@ export const createCreditCheckoutSession = async (req, res) => {
       },
     });
   } catch (error) {
+    const detail = getRazorpayErrorMessage(error) || error?.message || "Unknown error";
     logger.error("Error creating credit checkout session:", error);
-    res.status(500).json({ success: false, message: "Failed to create checkout session", error: error.message });
+    if (pendingTransactionId) {
+      await transactionsModel.findByIdAndDelete(pendingTransactionId).catch(() => {});
+    }
+    res.status(500).json({
+      success: false,
+      message: `Checkout failed: ${detail}`,
+      error: detail,
+    });
   }
 };
 

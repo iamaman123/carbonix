@@ -22,6 +22,27 @@ export function getRazorpay() {
   return _client;
 }
 
+/**
+ * Razorpay's Node SDK rejects with a plain object `{ statusCode, error }`, not `Error`,
+ * so `catch (e) { e.message }` is usually undefined. Use this for logs and API responses.
+ */
+export function getRazorpayErrorMessage(err) {
+  if (err == null) return "";
+  if (typeof err.message === "string" && err.message) return err.message;
+  const inner = err.error;
+  if (inner && typeof inner === "object") {
+    if (typeof inner.description === "string" && inner.description) return inner.description;
+    if (typeof inner.reason === "string" && inner.reason) return inner.reason;
+  }
+  if (typeof err.description === "string") return err.description;
+  try {
+    const s = JSON.stringify(inner ?? err);
+    return s !== "{}" ? s : "Razorpay request failed";
+  } catch {
+    return "Razorpay request failed";
+  }
+}
+
 export function verifyRazorpayPaymentSignature(orderId, paymentId, signature) {
   const secret = config.razorpay.keySecret;
   if (!secret || !orderId || !paymentId || !signature) return false;
