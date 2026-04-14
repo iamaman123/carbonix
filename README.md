@@ -1,73 +1,70 @@
-# Carbonix 
+# Carbonix
 
-Full-stack demo for listing, discovering, and trading surplus renewable energy (and related environmental credits) with optional on-chain receipts via a small blockchain service.
+Carbonix is a premium, fully-featured peer-to-peer (P2P) carbon credit trading platform that connects renewable energy producers directly with buyers without brokers or markups. It facilitates trading of verified carbon credits aligned with India's 2070 net-zero goals, the UN Paris Agreement, and the Carbon Credit Trading Scheme (CCTS 2023).
 
 ## What it does
 
-- Role-based accounts (producer, consumer, both, admin) with **Google sign-in** and profiles.
-- Marketplace for listings with search, filters, and pagination.
-- Purchase flow, transaction history, and downloadable receipts.
-- Blockchain microservice: wallet creation, transaction submission, mining, and chain validation; hashes stored with trades.
-- Dynamic pricing hints (Gemini), Razorpay payments, email notifications, Socket.io chat, and admin analytics.
+- **Role-Based Accounts:** Distinct flows for Producers, Consumers, and Admins via secure **Google Sign-In**. Includes an approval request workflow for new sellers.
+- **P2P Marketplace:** Discover and trade verifiable carbon credits with live dynamic pricing, project tracking, directory browsing, and search/filters.
+- **Analytics & Dashboards:** Distinct and comprehensive dashboard modules (Buyer Analytics, Seller Analytics, Combined Dashboard) tracking total earnings, carbon balances, and active marketplace insights.
+- **AI-Powered Integration:** Intelligent chatbot powered by Gemini API for immediate support, alongside dynamic AI pricing insights.
+- **Impact Visualization:** Interactive responsive 3D globe tracking carbon hubs and projects, plus integrated carbon footprint calculators to assess your direct emission impact.
+- **Seamless Checkout:** Real-time integrated payments via Razorpay (including same-day settlements workflow mockups), downloadable receipts, and transaction history tracking.
 
-## Stack
+## Technology Stack
 
-- **Frontend:** React (Vite), Tailwind, Radix UI, Recharts, Socket.io client  
-- **API:** Node.js, Express, MongoDB (Mongoose)  
-- **Chain service:** Python (Flask), SQLite  
-- **Other:** JWT, Razorpay, Nodemailer, rate limiting (Joi)
+- **Frontend:** React 19 (Vite), Tailwind CSS, Framer Motion, Radix UI, Recharts for robust visualizations
+- **API & Backend:** Node.js, Express, MongoDB (Mongoose), Socket.io for live updates
+- **Integrations:** Gemini API for AI features, Razorpay, Nodemailer, Google OAuth 2.0, Passport
 
 ## Authentication
 
-Sign-in is **Google only** (email/password registration and login are disabled in the API). In [Google Cloud Console](https://console.cloud.google.com/), create OAuth 2.0 credentials and set the redirect URI to the same value as `GOOGLE_CALLBACK_URL` in `server/.env` (local: `http://localhost:8000/api/auth/google/callback`; deployed example: `https://carbonix-me-1.vercel.app/api/auth/google/callback`).
+Sign-in is **Google exclusively** (email/password registration is restricted via API to ensure authenticity). 
 
-**OAuth redirect flow:** Browser opens `GET /api/auth/google?role=...` on the API (port **8000**) → Express redirects you to **accounts.google.com** → after consent, Google redirects to `GET /api/auth/google/callback?code=...&state=...` → the API issues a JWT and redirects the browser to `CLIENT_URL/auth/google/success?token=...` (Vite on **5173**). In Google Console, only the **callback** URL must be listed (not the `/google` start URL). Avoid spaces after `=` in `.env` values.
+In [Google Cloud Console](https://console.cloud.google.com/), create OAuth 2.0 credentials and set the redirect URI to match `GOOGLE_CALLBACK_URL` in your `server/.env`.
+- Local Example: `http://localhost:8000/api/auth/google/callback`
+- Production Example: `https://<YOUR-API-URL>/api/auth/google/callback`
 
-**Check config:** With the API running, open `https://carbonix-me-1.vercel.app/api/auth/oauth-config` (or your API host) — it shows the exact `callbackUrl` string that must appear under *Authorised redirect URIs* for this client ID.
+After Google consent, the API issues a JWT token and redirects your browser to the client app where you will be securely authenticated.
 
 ## Run locally
 
-**All services (recommended)**
-
-- Windows: `start-all.bat`
-- macOS/Linux: `./start-all.sh`
-
-**Manual**
-
-1. `blockchain-service`: run `setup.sh` / `setup.bat`, then `python app.py` (and optionally `python worker.py`).
-2. `server`: `npm install` → `npm run dev` (API on **http://localhost:8000** when `PORT=8000`; production API example: **https://carbonix-me-1.vercel.app**)
-3. `client`: `npm install` → `npm run dev` (Vite on **http://localhost:5173**)
-
-## Environment
-
-**Server (`server/.env`):** `PORT`, `MONGODB_URI`, `MONGODB_URI_DIRECT` (optional), `MONGODB_DNS_SERVERS` (optional), `JWT_SECRET`, `JWT_EXPIRY`, `EMAIL_*`, `GOOGLE_*`, `RAZORPAY_*`, `CLIENT_URL`, `GEMINI_API_KEY`, `BLOCKCHAIN_SERVICE_URL`.
-
-**Blockchain (`blockchain-service/.env`):** `FLASK_PORT`, `FLASK_ENV`, `NODE_SERVER_URL`, `SECRET_KEY`.
-
-## Layout
-
+**1. Server / API**
+```bash
+cd server
+npm install
+npm run dev
 ```
-Energy Trading P2P/
-  client/              # React app
-  server/              # Express API
-  blockchain-service/  # Flask chain
-  start-all.bat
-  start-all.sh
+*(Runs by default on http://localhost:8000)*
+
+**2. Client / Frontend**
+```bash
+cd client
+npm install
+npm run dev
+```
+*(Runs by default on http://localhost:5173)*
+
+## Environment Setup
+
+**Server (`server/.env`):**
+Required keys: `PORT`, `MONGODB_URI`, `JWT_SECRET`, `JWT_EXPIRY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`, `CLIENT_URL`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `GEMINI_API_KEY`. (An `.env.example` file is included in your source).
+
+## Roles & Admin Access
+
+- **CONSUMER** (Default): Buy energy credits on the marketplace. Can request producer access.
+- **PRODUCER**: Can post carbon credits and energy bounds for sale, view seller analytics, and access the producer dashboard.
+- **admin**: Has a full admin panel for blogs, transactions, users, and producer requests.
+
+To grant an account test admin credentials locally, ensure your database connection is active and run:
+```bash
+cd server
+npm run ensure-admin
 ```
 
-## API highlights
+## Demo Flow
 
-**Express:** `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/credits/post`, `GET /api/credits`, `POST /api/credits/payment`, `GET /api/pricing/market/insights`
-
-**Flask:** `GET /health`, `POST /wallet/create`, `POST /transaction/create`, `POST /mine`, `GET /chain`, `GET /chain/validate`
-
-## Notes
-
-The bundled chain is a teaching-style PoW implementation, not production infrastructure. Swap in a real network or custody model before any serious deployment.
-
-## Demo flow
-
-1. Sign in with Google and pick producer or consumer when prompted.  
-2. Post a listing; buy from the marketplace.  
-3. Open transaction history and receipt; note the chain hash when the blockchain service is running.  
-4. Explore pricing insights, dashboards, and chat.
+1. **Sign In:** Use Google to sign in (default status: Consumer).
+2. **Setup:** Request producer access via the "Become a Producer" prompt if you wish to sell. Use the server script to fast-track approvals or assign Admin roles. 
+3. **Trade Elements:** Post a credit listing directly or explore the marketplace to securely purchase carbon offsets.
+4. **Data Tools:** Dive into marketplace pricing insights, run the Carbon Calculator, and interact with the AI chatbot directly on the landing page!
