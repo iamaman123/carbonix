@@ -6,7 +6,7 @@ import StatsSection from "./sections/StatsSection";
 import HowItWorksSection from "./sections/HowItWorksSection";
 import ImpactSection from "./sections/ImpactSection";
 import IndiaInsightsSection from "./sections/IndiaInsightsSection";
-import GeminiChatbot from "@/components/common/GeminiChatbot";
+
 
 const LandingPage = () => {
   return (
@@ -19,7 +19,6 @@ const LandingPage = () => {
       <HowItWorksSection />
       <ImpactSection />
       <AccordionSection />
-      <GeminiChatbot />
     </main>
   );
 };

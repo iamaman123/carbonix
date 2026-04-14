@@ -7,7 +7,7 @@ Carbonix is a premium, fully-featured peer-to-peer (P2P) carbon credit trading p
 - **Role-Based Accounts:** Distinct flows for Producers, Consumers, and Admins via secure **Google Sign-In**. Includes an approval request workflow for new sellers.
 - **P2P Marketplace:** Discover and trade verifiable carbon credits with live dynamic pricing, project tracking, directory browsing, and search/filters.
 - **Analytics & Dashboards:** Distinct and comprehensive dashboard modules (Buyer Analytics, Seller Analytics, Combined Dashboard) tracking total earnings, carbon balances, and active marketplace insights.
-- **AI-Powered Integration:** Intelligent chatbot powered by Gemini API for immediate support, alongside dynamic AI pricing insights.
+- **AI-Powered Integration:** Dynamic AI pricing insights and analytics powered by the Gemini API.
 - **Impact Visualization:** Interactive responsive 3D globe tracking carbon hubs and projects, plus integrated carbon footprint calculators to assess your direct emission impact.
 - **Seamless Checkout:** Real-time integrated payments via Razorpay (including same-day settlements workflow mockups), downloadable receipts, and transaction history tracking.
 
@@ -67,4 +67,4 @@ npm run ensure-admin
 1. **Sign In:** Use Google to sign in (default status: Consumer).
 2. **Setup:** Request producer access via the "Become a Producer" prompt if you wish to sell. Use the server script to fast-track approvals or assign Admin roles. 
 3. **Trade Elements:** Post a credit listing directly or explore the marketplace to securely purchase carbon offsets.
-4. **Data Tools:** Dive into marketplace pricing insights, run the Carbon Calculator, and interact with the AI chatbot directly on the landing page!
+4. **Data Tools:** Dive into marketplace pricing insights and run the Carbon Calculator directly on the landing page!
